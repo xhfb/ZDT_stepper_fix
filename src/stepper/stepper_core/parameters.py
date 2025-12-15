@@ -96,10 +96,20 @@ def to_int(input: bytes) -> int:
     return int.from_bytes(input, "big")
 
 
-def to_signed_int(input: bytes) -> int:
+# 增加一个参数或者全局配置来区分版本
+def to_signed_int(input: bytes, is_y42: bool = False) -> int:
     """Convert long bytes to signed int."""
-    sign = -1 if input[0] == 1 else 1
-    return sign * to_int(input[1:])
+    if is_y42:
+        # Y42: 符号位在最后 (Value + Symbol)
+        # 假设 input 长度为 5 (4 bytes value + 1 byte symbol)
+        val_bytes = input[:-1]
+        sign_byte = input[-1]
+        sign = -1 if sign_byte == 1 else 1
+        return sign * int.from_bytes(val_bytes, "big")
+    else:
+        # V5.0: 符号位在最前 (Symbol + Value)
+        sign = -1 if input[0] == 1 else 1
+        return sign * int.from_bytes(input[1:], "big")
 
 
 @dataclass(frozen=True)
@@ -436,8 +446,16 @@ class VersionParams(StepperOutput):
 
     @classmethod
     def from_bytes(cls, data: bytes) -> "VersionParams":
-        """Convert from bytes."""
-        return cls(firmware_version=data[0], hardware_version=data[1])
+        # 注意：Y42 返回 4 个字节的数据
+        # data[0:2] 是固件版本 (2 bytes)
+        # data[2] 是硬件信息
+        # data[3] 是硬件版本
+        if len(data) >= 4:
+             # 这是一个简单的适配示例，具体需根据你的业务需求解析
+            return cls(firmware_version=int.from_bytes(data[0:2], "big"), hardware_version=data[3])
+        else:
+            # 兼容旧代码逻辑
+            return cls(firmware_version=data[0], hardware_version=data[1])
 
 
 @dataclass
