@@ -1,3 +1,9 @@
+Fix: 增加 ZDT Y42 (V2.0) 驱动板的初步兼容支持
+
+1. 重写 GetVersion 命令：增加自适应响应长度逻辑，同时兼容 Emm42 (5字节) 和 Y42 (7字节) 的握手协议。
+2. 修复初始化连接错误：解决了新款驱动板因返回数据长度不同导致的 Checksum 报错。
+3. 验证功能：Y42 电机可正常使用基本的速度控制与位置控制。
+
 ## Quick Start
 This is a Python library for controlling the closed-loop stepper motor controller from ZDT stepper（张大头步进电机） via UART serial connection. It includes all the documented commands from the spec sheet, and handles all parameters in a type-safe manner. It can also be extended with additional functionality, CAN communication, and can be modified for other serial controller devices. Fully tested and compatible with Python 3.10 and above.
 
